@@ -1,0 +1,32 @@
+{
+  "name": "inventory-genie-enterprise",
+  "version": "2.0.0",
+  "description": "Modern enterprise-grade inventory management system",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "install-server": "cd server && npm install",
+    "install-client": "cd client && npm install",
+    "install-all": "npm run install-server && npm run install-client",
+    "start": "cd server && npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrahmanashiq/inventory-genie.git"
+  },
+  "keywords": [
+    "inventory",
+    "management",
+    "enterprise",
+    "react",
+    "nodejs",
+    "mongodb"
+  ],
+  "author": "Mizan Rahman Ashiq",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

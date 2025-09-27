@@ -1,26 +1,75 @@
 {
-  "name": "server",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
+  "name": "inventory-genie-server",
+  "version": "2.0.0",
+  "description": "Enterprise Inventory Management System - Backend API",
+  "main": "server.js",
   "type": "module",
   "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "dev": "nodemon server.js",
     "start": "node server.js",
-    "dev": "npx nodemon server.js"
+    "build": "tsc",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "jsdoc": "jsdoc -c jsdoc.json",
+    "prod": "SET NODE_ENV=production && node server.js",
+    "seed": "node src/seeds/index.js"
   },
-  "author": {
-    "name": "Mizanur Rahman Ashiq",
-    "email": "mizanur.r.ashiq@gmail.com"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrahmanashiq/inventory-genie.git"
   },
+  "keywords": [],
+  "author": "Mizanur Rahman Ashiq",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mrahmanashiq/inventory-genie/issues"
+  },
+  "homepage": "https://github.com/mrahmanashiq/inventory-genie#readme",
   "dependencies": {
-    "bcrypt": "^5.1.0",
+    "bcrypt": "^5.1.1",
+    "cloudinary": "^1.41.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.1.1",
+    "express-formidable": "^1.2.0",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.3",
     "morgan": "^1.10.0",
-    "zod": "^3.21.4"
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.7",
+    "redis": "^4.6.10",
+    "socket.io": "^4.7.4",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "uuid": "^9.0.1",
+    "winston": "^3.11.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/morgan": "^1.9.9",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.10.5",
+    "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^6.4.14",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.6",
+    "@types/uuid": "^9.0.7",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "jsdoc": "^4.0.2",
+    "nodemon": "^3.0.2",
+    "typescript": "^5.3.3"
   }
 }

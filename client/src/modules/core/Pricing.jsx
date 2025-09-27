@@ -145,13 +145,13 @@ export default function Example() {
 							))}
 						</ul>
 						<a
-							href="https://mmr-ashiq.github.io/"
+							href="https://mrahmanashiq.github.io/"
 							className="flex items-center justify-center w-full px-8 py-4 text-lg font-medium leading-6 text-indigo-600 bg-white border border-transparent rounded-md hover:bg-indigo-50 md:px-10"
 						>
 							Get started today
 						</a>
 						<a
-							href="https://mmr-ashiq.github.io/"
+							href="https://mrahmanashiq.github.io/"
 							className="block text-base font-medium text-center text-indigo-200 hover:text-white"
 						>
 							Try our Lite plan for free

@@ -1,73 +1,74 @@
 import { Router } from 'express';
 
 import {
-  isLoggedIn,
-  login,
-  logout,
-  registration,
+  isLoggedInController,
+  loginController,
+  logoutController,
+  registrationController,
 } from '../core/authorization/auth.controller.js';
 import { isAuthorized } from '../core/authorization/auth.middlewares.js';
 import {
-  DeleteUser,
-  EditUser,
-  getUserList,
-  getUserProfile,
-  passwordChange,
+  DeleteUserController,
+  EditUserController,
+  getUserListController,
+  getUserProfileController,
+  passwordChangeController,
 } from './user.controller.js';
 
 const router = Router();
-router.post('/auth/login', login);
+
+router.post('/auth/login', loginController);
 router.post(
-	'/auth/registration',
-	isAuthorized({
-		allowedRole: [],
-		allowedPermissions: [],
-	}),
-	registration
+  '/auth/registration',
+  isAuthorized({
+    allowedRole: ['manager', 'admin'],
+    allowedPermissions: [],
+  }),
+  registrationController
 );
 
-router.get('/auth/is-logged-in', isLoggedIn);
-router.get('/auth/logout', logout);
+router.get('/auth/is-logged-in', isLoggedInController);
+router.get('/auth/logout', logoutController);
 
 router.get(
-	'/user/profile',
-	isAuthorized({
-		allowedRole: ['admin', 'manager'],
-		allowedPermissions: [],
-	}),
-	getUserProfile
+  '/user/profile',
+  isAuthorized({
+    allowedRole: ['admin', 'manager'],
+    allowedPermissions: [],
+  }),
+  getUserProfileController
 );
 router.get(
-	'/users',
-	isAuthorized({
-		allowedRole: ['manager', 'admin'],
-		allowedPermissions: [],
-	}),
-	getUserList
+  '/users',
+  isAuthorized({
+    allowedRole: ['manager', 'admin'],
+    allowedPermissions: [],
+  }),
+  getUserListController
 );
 router.put(
-	'/user/:id',
-	isAuthorized({
-		allowedRole: ['manager', 'admin'],
-		allowedPermissions: [],
-	}),
-	EditUser
+  '/user/:id',
+  isAuthorized({
+    allowedRole: ['manager', 'admin'],
+    allowedPermissions: [],
+  }),
+  EditUserController
 );
 router.delete(
-	'/user/:id',
-	isAuthorized({
-		allowedRole: ['manager', 'admin'],
-		allowedPermissions: [],
-	}),
-	DeleteUser
+  '/user/:id',
+  isAuthorized({
+    allowedRole: ['manager', 'admin'],
+    allowedPermissions: [],
+  }),
+  DeleteUserController
 );
 router.put(
-	'/user/change-password',
-	isAuthorized({
-		allowedRole: ['admin', 'manager'],
-		allowedPermissions: [],
-	}),
-	passwordChange
+  '/user/change-password',
+  isAuthorized({
+    allowedRole: ['admin', 'manager'],
+    allowedPermissions: [],
+  }),
+  passwordChangeController
 );
 
 export { router as userRouter };

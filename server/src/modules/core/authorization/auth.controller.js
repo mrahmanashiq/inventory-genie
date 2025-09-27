@@ -2,141 +2,164 @@ import { compare, hash } from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 import { config } from '../../../config/lib/config.js';
-import { userModel } from '../../platform-users/user.model.js';
 import { cookieOptions } from '../utils/cookie.js';
+import { userModel } from '../../../models/user.model.js';
 import { RegistrationSchema } from './auth.dto.js';
 
-export const registration = async (req, res) => {
-	try {
-		const isValidData = await RegistrationSchema.safeParseAsync(req.body);
+export const loginController = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-		if (!isValidData.success)
-			return res.status(400).json({
-				success: false,
-				message: isValidData.error.issues[0].message,
-			});
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
 
-		const { email, password, permissions, confirmPassword, name, role } =
-			isValidData.data;
+    const user = await userModel.findOne({ email }).select('+password');
 
-		if (password !== confirmPassword) {
-			return res.status(400).json({
-				message: 'Passwords do not match',
-			});
-		}
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-		const existingUser = await userModel.findOne({ email });
+    const isMatch = await compare(password, user.password);
 
-		if (existingUser) {
-			return res.status(400).json({
-				message: 'User already exists',
-			});
-		}
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
 
-		const hashedPassword = await hash(password, 12);
+    const token = jwt.sign(
+      { userId: user._id, role: user.role, permissions: user.permissions },
+      config.jwtSecret
+    );
 
-		const user = await userModel.create({
-			name: name,
-			email: email,
-			password: hashedPassword,
-			role: role,
-			permissions: permissions?.length ? permissions : [],
-		});
+    const { password: userPassword, ...userWithoutPassword } = user.toObject();
 
-		const { password: userPassword, ...userWithoutPassword } =
-			user.toObject();
-
-		return res.status(201).json({
-			message: 'User created successfully',
-			user: userWithoutPassword,
-		});
-	} catch (error) {
-		console.log(error);
-		return res.status(500).json({
-			message: 'Something went wrong',
-		});
-	}
+    return res
+      .status(200)
+      .cookie('token', token, cookieOptions())
+      .json({ user: userWithoutPassword });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Something went wrong' });
+  }
 };
 
-export const login = async (req, res) => {
-	try {
-		const { email, password } = req.body;
+export const registrationController = async (req, res) => {
+  try {
+    const isValidData = await RegistrationSchema.safeParseAsync(req.body);
 
-		if (!email || !password) {
-			return res
-				.status(400)
-				.json({ message: 'Email and password are required' });
-		}
+    if (!isValidData.success)
+      return res.status(400).json({
+        success: false,
+        message: isValidData.error.issues[0].message,
+      });
 
-		const user = await userModel.findOne({ email }).select('+password');
+    const { email, password, permissions, confirmPassword, name, role } = isValidData.data;
 
-		if (!user) {
-			return res.status(404).json({ message: 'User not found' });
-		}
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
 
-		const isMatch = await compare(password, user.password);
+    const existingUser = await userModel.findOne({ email });
 
-		if (!isMatch) {
-			return res.status(400).json({ message: 'Invalid credentials' });
-		}
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
 
-		const token = jwt.sign(
-			{
-				userId: user._id,
-				role: user.role,
-				permissions: user.permissions,
-			},
-			config.jwtSecret
-		);
+    const hashedPassword = await hash(password, 12);
 
-		const { password: userPassword, ...userWithoutPassword } =
-			user.toObject();
+    const user = await userModel.create({
+      name: name,
+      email: email,
+      password: hashedPassword,
+      role: role,
+      permissions: permissions?.length ? permissions : [],
+    });
 
-		return res
-			.status(200)
-			.cookie('token', token, cookieOptions())
-			.json({ user: userWithoutPassword });
-	} catch (error) {
-		console.log(error);
-		return res.status(500).json({ message: 'Something went wrong' });
-	}
+    const { password: userPassword, ...userWithoutPassword } = user.toObject();
+
+    return res.status(201).json({
+      message: 'User created successfully',
+      user: userWithoutPassword,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Something went wrong' });
+  }
 };
 
-export const isLoggedIn = async (req, res) => {
-	try {
-		const cookie = req.cookies.token;
+/**
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns promise if successfull returns success message else error message
+ */
+export const changePasswordController = async (req, res) => {
+  try {
+    const { previousPassword, newPassword, confirmPassword } = req.body;
 
-		if (!cookie) {
-			return res.status(200).json({ message: 'User not logged in' });
-		}
+    if (!previousPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
 
-		const decoded = jwt.verify(cookie, config.jwtSecret);
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
 
-		const user = await userModel.findById(decoded.userId);
+    const user = await userModel.findById(req.userData.userId).select('+password');
 
-		if (!user) {
-			return res.status(200).json({ message: 'User not found' });
-		}
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-		return res.status(200).json({
-			message: 'login successful',
-			data: {
-				user,
-			},
-		});
-	} catch (error) {
-		return res.status(500).json({ message: 'Something went wrong' });
-	}
+    const isMatch = await compare(previousPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    const hashedPassword = await hash(newPassword, 12);
+
+    await userModel.findByIdAndUpdate(req.userData.userId, { password: hashedPassword });
+
+    return res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong' });
+  }
 };
 
-export const logout = async (req, res) => {
-	try {
-		res.clearCookie('token');
+export const isLoggedInController = async (req, res) => {
+  try {
+    const cookie = req.cookies.token;
 
-		return res
-			.status(200)
-			.json({ message: 'User logged out successfully' });
-	} catch (error) {
-		return res.status(500).json({ message: 'Something went wrong' });
-	}
+    if (!cookie) {
+      return res.status(200).json({ message: 'User not logged in' });
+    }
+
+    const decoded = jwt.verify(cookie, config.jwtSecret);
+
+    const user = await userModel.findById(decoded.userId);
+
+    if (!user) {
+      return res.status(200).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({
+      message: 'login successful',
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong' });
+  }
+};
+
+export const logoutController = async (req, res) => {
+  try {
+    res.clearCookie('token');
+
+    return res.status(200).json({ message: 'User logged out successfully' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong' });
+  }
 };
